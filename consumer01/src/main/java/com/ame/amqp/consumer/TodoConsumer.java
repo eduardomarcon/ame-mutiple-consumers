@@ -13,12 +13,17 @@ import java.io.IOException;
 @Component
 public class TodoConsumer {
 
+    private final TodoService service;
+
+    public TodoConsumer(TodoService service) {
+        this.service = service;
+    }
+
     @RabbitListener(queues = "todos")
     public void consumer(Message message, Channel channel, @Header(AmqpHeaders.DELIVERY_TAG) long tag) throws IOException {
         String tipo = new ObjectMapper().readTree(message.getBody()).get("tipo").asText();
-        System.out.println(tipo);
         if ("sumo".equalsIgnoreCase(tipo)){
-            System.out.println("aceitou");
+            service.printTipo(tipo);
             channel.basicAck(tag, true);
         } else {
             channel.basicReject(tag, true);
